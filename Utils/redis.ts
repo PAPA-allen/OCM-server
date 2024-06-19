@@ -4,7 +4,7 @@ import "dotenv/config";
 const redisClient = () => {
   if (process.env.REDIS_URL) {
     console.log("redis Connected");
-    process.env.REDIS_URL;
+    return process.env.REDIS_URL;
   }
   throw new Error("Redis connection failed");
 };

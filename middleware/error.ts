@@ -11,7 +11,7 @@ export const ErrorMiddleware = (
   error.message = error.message || "Internal server error";
 
   //wrong mongo id error
-  if ((error.name = "CastError")) {
+  if ((error.name === "CastError")) {
     const message = `Resource not found. Invalid: ${error.path}`;
     error = new ErrorHandler(message, 400);
   }
