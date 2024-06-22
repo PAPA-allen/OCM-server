@@ -14,7 +14,11 @@ import {
   sendToken,
 } from "../Utils/jwt";
 import { RedisKey } from "ioredis";
-import { getUserById } from "../services/user.service";
+import {
+  getAllUsersService,
+  getUserById,
+  updateUserRoleService,
+} from "../services/user.service";
 import cloudinary from "cloudinary";
 
 //register user
@@ -350,8 +354,8 @@ export const updateProfilePicture = catchAsyncError(
       const userId = req.user?._id;
 
       const user = await userModel.findById(userId);
-   
-      if(avatar && user){
+
+      if (avatar && user) {
         //if we have one avatar then call this if
         if (user?.avatar?.public_id) {
           //first delete the old image
@@ -380,9 +384,56 @@ export const updateProfilePicture = catchAsyncError(
       await redis.set(userId as RedisKey, JSON.stringify(user));
 
       res.status(200).json({
-        success:true,
+        success: true,
         user,
-      })
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//get all users --only foe admin
+export const getAllUsers = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      getAllUsersService(res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//pdate user role --only for admin
+export const updateUserRole = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id, role } = req.body;
+      updateUserRoleService(res, id, role);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+//Delete user --only for admin
+export const deleteUser = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const user = await userModel.findById(id);
+      if (!user) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      await user.deleteOne({ id });
+
+      await redis.del(id);
+
+      res.status(200).json({
+        success: true,
+        message: "User deleted successfully",
+      });
+      
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }

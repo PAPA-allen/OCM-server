@@ -2,13 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsyncError } from "../middleware/catchAsyncErrors";
 import ErrorHandler from "../Utils/ErrorHandler";
 import cloudinary from "cloudinary";
-import { createCourse } from "../services/course.service";
+import { createCourse, getAllCoursesService } from "../services/course.service";
 import CourseModel from "../models/course.model";
 import { redis } from "../Utils/redis";
 import mongoose from "mongoose";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../Utils/sendMail";
+import NotificationModel from "../models/notificationModel";
 
 //upload cource
 export const uploadCourse = catchAsyncError(
@@ -196,6 +197,12 @@ export const addQuestion = catchAsyncError(
       //add this question to our course content
       courseContent.questions.push(newQuestion);
 
+      await NotificationModel.create({
+        user: req.user?._id,
+        title: "New Question Received",
+        message: `You have a new question in ${courseContent.title}`,
+      });
+
       //save the updated course
       await course?.save();
 
@@ -258,6 +265,11 @@ export const addAnswer = catchAsyncError(
 
       if (req.user?._id === question.user._id) {
         //create a notification
+        await NotificationModel.create({
+          user:req.user?._id,
+          title:"New Question Reply Received",
+          message:`You have a new question reply in ${courseContent.title}`
+        })
       } else {
         const data = {
           name: question.user.name,
@@ -334,9 +346,101 @@ export const addReview = catchAsyncError(
         course.ratings = avg / course.reviews.length; //example we have two reviews =4.5 rating
       }
       await course?.save();
-      
+
+      const notification = {
+        title: "New Review Received",
+        message: `${req.user?.name} has given a review in ${course?.name}`,
+      };
+
+      //create notification
+      res.status(200).json({
+        success: true,
+        course,
+      });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+//add reply in review
+interface IAddReviewData {
+  comment: string;
+  courseId: string;
+  reviewId: string;
+}
+export const addReplyToReview = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { comment, courseId, reviewId } = req.body as IAddReviewData;
+
+      const course = await CourseModel.findById(courseId);
+
+      if (!course) {
+        return next(new ErrorHandler("Course not found", 400));
+      }
+      const review = course?.reviews?.find(
+        (rev: any) => rev._id.toString() === reviewId
+      );
+
+      if (!review) {
+        return next(new ErrorHandler("Review not found", 400));
+      }
+
+      const replyData: any = {
+        user: req.user,
+        comment,
+      };
+
+      if (!review.commentReplies) {
+        review.commentReplies = [];
+      }
+
+      review.commentReplies?.push(replyData);
+
+      await course?.save();
+
+      res.status(200).json({
+        success: true,
+        course,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 500));
+    }
+  }
+);
+
+
+//get all coursess --only foe admin
+export const getAllUsers = catchAsyncError(async(req:Request, res:Response, next:NextFunction)=>{
+  try {
+    getAllCoursesService(res);
+  } catch (error:any) {
+    return next(new ErrorHandler(error.message, 500))
+  }
+})
+
+
+//Delete course --only for admin
+export const deleteCourse = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const course = await CourseModel.findById(id);
+      if (!course) {
+        return next(new ErrorHandler("User not found", 404));
+      }
+      await course.deleteOne({ id });
+
+      await redis.del(id);
+
+      res.status(200).json({
+        success: true,
+        message: "Course deleted successfully",
+      });
+      
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
     }
   }
 );

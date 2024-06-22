@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to OCMS!</title>
+  <style>
+    /* Reset and basic styling */
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    /* Container styling */
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    /* Header styling */
+    .message {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-top: 20px;
+    }
+    .message h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin-top: 0;
+      margin-bottom: 5px;
+    }
+    .message p {
+      font-size: 18px;
+      color: #666;
+      margin-top: 0;
+    }
+    /* Table styling */
+    table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    /* Footer styling */
+    .footer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var currentYear = new Date().getFullYear();
+      var yearSpan = document.getElementById('currentYear');
+      if (yearSpan) {
+        yearSpan.textContent = currentYear;
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="message">
+      <h1>Your OnlineLearning Order is Confirmed</h1>
+      <p>We're excited to share this journey with you!</p>
+    </div>
+    <div class="course-info">
+      <h4>Order Details:</h4>
+      <table>
+        <tr>
+          <th>Order #</th>
+          <th>Date</th>
+        </tr>
+        <tr>
+          <td><%=order._id%></td>
+          <td><%=order.date%></td>
+        </tr>
+      </table>
+      <table>
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Cost</th>
+        </tr>
+        <tr>
+          <td><%=order.name%></td>
+          <td>1</td>
+          <td>GHS<%=order.price%></td>
+        </tr>
+      </table>
+      <table>
+        <tr>
+          <td colspan="2" style="text-align: right;">Subtotal:</td>
+          <td><%=order.price%></td>
+        </tr>
+        <tr>
+          <td colspan="2" style="text-align: right;">Total:</td>
+          <td>GHS<%=order.price%></td>
+        </tr>
+      </table>
+    </div>
+    <div class="footer">
+      <p>Thank you for choosing OCMS. Need further assistance? <a href="mailto:arcnilesupport@gmail.com">arcnilesupport@gmail.com</a></p>
+      <p>&copy; <span id="currentYear">2024</span> OCMS. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>
