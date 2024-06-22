@@ -88,7 +88,7 @@ export const editLayout = catchAsyncError(
             subTitle,
           },
         };
-        await LayoutModel.findByIdAndUpdate(bannerData.id, { banner });
+        await LayoutModel.findByIdAndUpdate(bannerData._id, { banner });
       }
       if (type === "FAQ") {
         const { faq } = req.body;
@@ -132,3 +132,17 @@ export const editLayout = catchAsyncError(
     }
   }
 );
+
+//get layout by type
+export const getLayoutByType=catchAsyncError(async(req:Request, res:Response, next:NextFunction)=>{
+    try {
+        const {type}=req.body
+        const layout = await LayoutModel.findOne({type});
+        res.status(201).json({
+            success:true,
+            layout
+        })
+    } catch (error: any) {
+        return next(new ErrorHandler(error.message, 500));
+      }
+})
