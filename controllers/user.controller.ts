@@ -165,7 +165,7 @@ export const loginUser = catchAsyncError(
 export const logoutUser = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      res.cookie("acces_token", "", { maxAge: 1 });
+      res.cookie("access_token", "", { maxAge: 1 });
       res.cookie("refresh_token", "", { maxAge: 1 });
       const userId = (req.user?._id as RedisKey) || "";
 
